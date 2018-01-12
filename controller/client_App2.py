@@ -24,6 +24,9 @@ tcpCliSock.connect(ADDR)                    # Connect with the server
 # Get original offset configuration.
 # =============================================================================
 
+class Message:
+    def send(self, msg):
+        tcpCliSock.send(str.encode(msg+';'))
 
 # Colors
 BLACK = (0, 0, 0)
@@ -37,7 +40,7 @@ class TextPrint:
         self.reset()
         self.font = pygame.font.Font(None, 30)
 
-    def print(self, screen, textString):
+    def printText(self, screen, textString):
         textBitmap = self.font.render(textString, True, WHITE)
         screen.blit(textBitmap, [self.x, self.y])
         self.y += self.line_height
@@ -137,84 +140,104 @@ textPrint = TextPrint()
 done = False
 
 my_controller = xbox360_controller.Controller(0)
-
+message = Message()
+stopped = True
 while done==False:
     # Event processing
     for event in pygame.event.get():
-
-        left_x, left_y = my_controller.get_left_stick()
         
         if event.type == pygame.QUIT:
             done = True
-        elif event.type == pygame.JOYBUTTONDOWN:
-            if event.button == xbox360_controller.A:
-                 tcpCliSock.send(b'forward')
-        elif event.type == pygame.JOYBUTTONUP:
-            if event.button == xbox360_controller.A:
-                 tcpCliSock.send(b'stop')
+        #elif event.type == pygame.JOYBUTTONDOWN:
+        #    if event.button == xbox360_controller.A:
+        #         message.send('forward')
+        #elif event.type == pygame.JOYBUTTONUP:
+        #    if event.button == xbox360_controller.A:
+        #         message.send('stop')
         
+        left_x, left_y = my_controller.get_left_stick()
+
         if int(round(left_x)) > 0:
-            cmd = 'offset=' + str(int(left_x * 10))
-            tcpCliSock.send(str.encode('right'))
+            cmd = 'offset=+' + str(int(left_x * 100.0))
+            message.send(cmd)
         elif int(round(left_x)) < 0:
-            cmd = 'offset=' + str(int(left_x * 10))
-            tcpCliSock.send(str.encode('left'))
+            cmd = 'offset=' + str(int(left_x * 80))
+            message.send(cmd)
         else:
-            tcpCliSock.send(b'home')
+            message.send('home')
+
+        backwardSpd = my_controller.joystick.get_axis(4)
+        forwardSpd = my_controller.joystick.get_axis(5)
+
+        if backwardSpd > -1:
+            bkspd = 50 - ((backwardSpd * -100.0) /2)
+            cmd = 'backward=' + str(int(bkspd))
+            message.send(cmd)
+            stopped = False
+        elif forwardSpd > -1:
+            fwspd = 50 - ((forwardSpd * -100.0) /2)
+            cmd = 'forward=' + str(int(fwspd))
+            message.send(cmd)
+            stopped = False
+        elif forwardSpd == -1 and backwardSpd == -1 and stopped == False:
+            stopped = True
+            tcpCliSock.send(b'stop')
+
+        
         
     # Drawing code
     screen.fill(BLACK)
     textPrint.reset()
 
     # Get count of joysticks
-    joystick_count = pygame.joystick.get_count()
+    #joystick_count = pygame.joystick.get_count()
 
-    textPrint.print(screen, "Number of joysticks: {}".format(joystick_count) )
-    textPrint.indent()
+    #textPrint.printText(screen, "Number of joysticks: {}".format(joystick_count) )
+    #textPrint.indent()
 
     # For each joystick:
-    for i in range(joystick_count):
-        joystick = pygame.joystick.Joystick(i)
-        joystick.init()
+    #for i in range(joystick_count):
+    #    joystick = pygame.joystick.Joystick(i)
+    #    joystick.init()
 
-        textPrint.print(screen, "Joystick {}".format(i) )
-        textPrint.indent()
+    #    textPrint.printText(screen, "Joystick {}".format(i) )
+    #    textPrint.indent()
 
         # Get the name from the OS for the controller/joystick
-        name = joystick.get_name()
-        textPrint.print(screen, "Joystick name: {}".format(name) )
+    #    name = joystick.get_name()
+    #    textPrint.printText(screen, "Joystick name: {}".format(name) )
 
         # Usually axis run in pairs, up/down for one, and left/right for the other.
-        axes = joystick.get_numaxes()
-        textPrint.print(screen, "Number of axes: {}".format(axes) )
-        textPrint.indent()
+    #    axes = joystick.get_numaxes()
+    #    textPrint.printText(screen, "Number of axes: {}".format(axes) )
+    #    textPrint.indent()
 
-        for i in range( axes ):
-            axis = joystick.get_axis( i )
-            textPrint.print(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
-        textPrint.unindent()
+    #    for i in range( axes ):
+    #        axis = joystick.get_axis( i )
+    #        textPrint.printText(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
+    #    textPrint.unindent()
 
-        buttons = joystick.get_numbuttons()
-        textPrint.print(screen, "Number of buttons: {}".format(buttons) )
-        textPrint.indent()
+    #    buttons = joystick.get_numbuttons()
+    #    textPrint.printText(screen, "Number of buttons: {}".format(buttons) )
+    #    textPrint.indent()
 
-        for i in range( buttons ):
-            button = joystick.get_button( i )
-            textPrint.print(screen, "Button {:>2} value: {}".format(i,button) )
-        textPrint.unindent()
+    #    for i in range( buttons ):
+    #        button = joystick.get_button( i )
+    #        textPrint.printText(screen, "Button {:>2} value: {}".format(i,button) )
+    #    textPrint.unindent()
 
         # Hat switch. All or nothing for direction, not like joysticks.
         # Value comes back in a tuple.
-        hats = joystick.get_numhats()
-        textPrint.print(screen, "Number of hats: {}".format(hats) )
-        textPrint.indent()
+    #    hats = joystick.get_numhats()
+    #    textPrint.printText(screen, "Number of hats: {}".format(hats) )
+    #    textPrint.indent()
 
-        for i in range( hats ):
-            hat = joystick.get_hat( i )
-            textPrint.print(screen, "Hat {} value: {}".format(i, str(hat)) )
-        textPrint.unindent()
+    #    for i in range( hats ):
+    #        hat = joystick.get_hat( i )
+    #        textPrint.printText(screen, "Hat {} value: {}".format(i, str(hat)) )
+    #    textPrint.unindent()
 
-        textPrint.unindent()
+    #    textPrint.unindent()
 
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
