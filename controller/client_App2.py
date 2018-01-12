@@ -19,6 +19,7 @@ ADDR = (HOST, PORT)
 tcpCliSock = socket(AF_INET, SOCK_STREAM)   # Create a socket
 tcpCliSock.connect(ADDR)                    # Connect with the server
 
+#Testing
 # =============================================================================
 # Get original offset configuration.
 # =============================================================================
