@@ -88,6 +88,10 @@ while True:
 				if spd < 24:
 					spd = 24
 				motor.setSpeed(spd)
+		elif data[0:7] == 'offset=':
+				print 'offset called, data = ' data
+				offset = int(data[7:])
+				car_dir.calibrate(offset)
 		elif data[0:5] == 'turn=':	#Turning Angle
 			print 'data =', data
 			angle = data.split('=')[1]
