@@ -1,2 +1,2 @@
 Introduction:
-	This is Sunfounder Raspberry Pi smart video car client. It is based on Python3 and pygame.
+	This is Sunfounder Raspberry Pi smart video car client. It is based on Python3 and pygame and using the xbox360Controller driver to control the car over IP.
