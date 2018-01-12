@@ -38,6 +38,7 @@ while True:
 	lastCmd = ''
 
 	while True:
+<<<<<<< HEAD
 		msgs = ''
 		recdata = tcpCliSock.recv(BUFSIZ)    # Receive data sent from the client. 
 		# Analyze the command received and control the car accordingly.
@@ -50,6 +51,16 @@ while True:
 				break
 
 			lastCmd = data
+=======
+		data = ''
+		recdata = tcpCliSock.recv(BUFSIZ)    # Receive data sent from the client. 
+		# Analyze the command received and control the car accordingly.
+		msgs = recdata.split(';')
+		for data in msgs:
+		
+			if not data:
+				break
+>>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
 			if data == ctrl_cmd[0]:
 				print 'motor moving forward'
 				motor.forward()
@@ -99,9 +110,15 @@ while True:
 						spd = 24
 					motor.setSpeed(spd)
 			elif data[0:7] == 'offset=':
+<<<<<<< HEAD
 				print 'offset called, data = ', data
 				offset = int(data[7:])
 				car_dir.calibrate(offset)
+=======
+					print 'offset called, data = ', data
+					offset = int(data[7:])
+					car_dir.calibrate(offset)
+>>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
 			elif data[0:5] == 'turn=':	#Turning Angle
 				print 'data =', data
 				angle = data.split('=')[1]
@@ -112,6 +129,7 @@ while True:
 					print 'Error: angle =', angle
 			elif data[0:8] == 'forward=':
 				print 'data =', data
+<<<<<<< HEAD
 				spd = data.split('=')[1]
 				try:
 					spd = int(spd)
@@ -128,6 +146,22 @@ while True:
 					motor.backward()
 				except:
 					print 'ERROR , speed =', spd
+=======
+				spd = data[8:]
+				try:
+					spd = int(spd)
+					motor.forward(spd)
+				except:
+					print 'Error speed =', spd
+					elif data[0:9] == 'backward=':
+							print 'data =', data
+							spd = data.split('=')[1]
+				try:
+					spd = int(spd)
+								motor.backward(spd)
+				except:
+					print 'ERROR, speed =', spd
+>>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
 
 			else:
 				print 'Command Error! Cannot recognize command: ' + data
