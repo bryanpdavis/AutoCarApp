@@ -1,6 +1,6 @@
 # AutoCarApp
 Introduction:
-	This is Sunfounder Raspberry Pi smart video car client. 
+	This is based on the Sunfounder Raspberry Pi smart video car client but updating to support the xbox360controller and hopefully a steering wheel via pygame for cross-platform support. 
 
 	Car:
 		It is based on the Sunfounder Raspberry Pi smart video car kit, being modified to support commands to move
