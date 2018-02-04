@@ -36,48 +36,23 @@ while True:
 	# one, which means it is suspended before the connection comes.
 	tcpCliSock, addr = tcpSerSock.accept() 
 	print '...connected from :', addr     # Print the IP address of the client connected with the server.
-	
+
 	lastCmd = ''
 
 	while True:
-<<<<<<< HEAD
 		msgs = ''
 		recdata = tcpCliSock.recv(BUFSIZ)    # Receive data sent from the client. 
 		# Analyze the command received and control the car accordingly.
 		msgs = recdata.split(';')
-		
+			
 		for data in msgs:
 			if not data:
 				break
+		
 			if lastCmd == data:
+				print("Last Command:", lastCmd, "Current Data:", data, "Ignoring")
 				break
 
-			lastCmd = data
-			if data == ctrl_cmd[6]:
-=======
-<<<<<<< HEAD
-		msgs = ''
-		recdata = tcpCliSock.recv(BUFSIZ)    # Receive data sent from the client. 
-		# Analyze the command received and control the car accordingly.
-		msgs = recdata.split(';')
-		
-		for data in msgs:
-			if not data:
-				break
-			if lastCmd == data:
-				break
-
-			lastCmd = data
-=======
-		data = ''
-		recdata = tcpCliSock.recv(BUFSIZ)    # Receive data sent from the client. 
-		# Analyze the command received and control the car accordingly.
-		msgs = recdata.split(';')
-		for data in msgs:
-		
-			if not data:
-				break
->>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
 			if data == ctrl_cmd[0]:
 				print 'motor moving forward'
 				motor.forward()
@@ -91,7 +66,6 @@ while True:
 				print 'recv right cmd'
 				car_dir.turn_right()
 			elif data == ctrl_cmd[6]:
->>>>>>> 1f5d8c07fa0c11a9971bbbc2fb42240f68dc742d
 				print 'recv home cmd'
 				car_dir.home()
 			elif data == ctrl_cmd[4]:
@@ -101,25 +75,7 @@ while True:
 				print 'read cpu temp...'
 				temp = cpu_temp.read()
 				tcpCliSock.send('[%s] %0.2f' % (ctime(), temp))
-<<<<<<< HEAD
-=======
-			elif data == ctrl_cmd[8]:
-				print 'recv x+ cmd'
-				video_dir.move_increase_x()
-			elif data == ctrl_cmd[9]:
-				print 'recv x- cmd'
-				video_dir.move_decrease_x()
-			elif data == ctrl_cmd[10]:
-				print 'recv y+ cmd'
-				video_dir.move_increase_y()
-			elif data == ctrl_cmd[11]:
-				print 'recv y- cmd'
-				video_dir.move_decrease_y()
-			elif data == ctrl_cmd[12]:
-				print 'home_x_y'
-				video_dir.home_x_y()
->>>>>>> 1f5d8c07fa0c11a9971bbbc2fb42240f68dc742d
-			elif data[0:5] == 'speed':     # Change the speed
+			elif data[0:5] == 'speed':
 				print data
 				numLen = len(data) - len('speed')
 				if numLen == 1 or numLen == 2 or numLen == 3:
@@ -130,35 +86,21 @@ while True:
 					if spd < 24:
 						spd = 24
 					motor.setSpeed(spd)
-			elif data[0:7] == 'offset=':
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 1f5d8c07fa0c11a9971bbbc2fb42240f68dc742d
-				print 'offset called, data = ', data
-				offset = int(data[7:]) + 28
-				car_dir.calibrate(offset)
-<<<<<<< HEAD
-			elif data[0:8] == 'forward=':
+			elif data[0:8] == 'network=':
 				print 'data =', data
-=======
-=======
-					print 'offset called, data = ', data
-					offset = int(data[7:])
-					car_dir.calibrate(offset)
->>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
-			elif data[0:5] == 'turn=':	#Turning Angle
-				print 'data =', data
-				angle = data.split('=')[1]
+				spd = data.split('=')[1]
 				try:
-					angle = int(angle)
-					car_dir.turn(angle)
+					spd = int(spd)
+					os.system('sudo tc qdisc del dev wlan0 root')
+					os.system('sudo tc qdisc add dev wlan0 root netem delay {0}ms'.format(spd))
 				except:
-					print 'Error: angle =', angle
+					print 'ERROR , speed =', spd
+			elif data[0:7] == 'offset=':
+					print 'offset called, data = ', data
+					offset = int(data[7:]) + 28
+					car_dir.calibrate(offset)
 			elif data[0:8] == 'forward=':
 				print 'data =', data
-<<<<<<< HEAD
->>>>>>> 1f5d8c07fa0c11a9971bbbc2fb42240f68dc742d
 				spd = data.split('=')[1]
 				try:
 					spd = int(spd)
@@ -175,34 +117,6 @@ while True:
 					motor.backward()
 				except:
 					print 'ERROR , speed =', spd
-<<<<<<< HEAD
-			elif data[0:8] == 'network=':
-    				print 'data =', data
-				spd = data.split('=')[1]
-				try:
-					spd = int(spd)
-					os.system('sudo tc qdisc del dev wlan0 root')
-					os.system('sudo tc qdisc add dev wlan0 root netem delay {0}ms'.format(spd))
-				except:
-					print 'ERROR , speed =', spd
-=======
-=======
-				spd = data[8:]
-				try:
-					spd = int(spd)
-					motor.forward(spd)
-				except:
-					print 'Error speed =', spd
-					elif data[0:9] == 'backward=':
-							print 'data =', data
-							spd = data.split('=')[1]
-				try:
-					spd = int(spd)
-								motor.backward(spd)
-				except:
-					print 'ERROR, speed =', spd
->>>>>>> 0ed02f86bf9bbd518b63eacaa187a0417c9be4ce
->>>>>>> 1f5d8c07fa0c11a9971bbbc2fb42240f68dc742d
 
 			else:
 				print 'Command Error! Cannot recognize command: ' + data
