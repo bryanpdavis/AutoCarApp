@@ -26,10 +26,13 @@ pins = [Motor0_A, Motor0_B, Motor1_A, Motor1_B]
 # the servo driver IC, so as to control the speed of the car.
 # ===========================================================================
 def setSpeed(speed):
+	Speed = speed
 	speed *= 40
-	print 'speed is: ', speed
 	pwm.write(EN_M0, 0, speed)
 	pwm.write(EN_M1, 0, speed)
+
+def getSpeed():
+	return pwm.read(EN_M0)
 
 def setup(busnum=None):
 	global forward0, forward1, backward1, backward0

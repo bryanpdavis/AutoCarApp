@@ -1,0 +1,8 @@
+#package.json
+{
+ "main": "index.js",
+ "author": "Elias Lecomte <elias.lecomte@gmail.com>",
+ "dependencies": {
+  "express": "^4.14.1"
+ }
+}
