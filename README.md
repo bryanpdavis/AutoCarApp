@@ -4,10 +4,12 @@ Introduction:
 
 	Open Terminal Window to Connect to Car.
 		ssh pi@ip
+		pi@Car:~ $ git clone https://github.com/bryanpdavis/AutoCarApp.git
 		cd /AutoCarApp/car/
 		sudo python tcp_server.py
 
 	Open another window:
+		Computer:~ name$ git clone https://github.com/bryanpdavis/AutoCarApp.git
 		cd /AutoCar/controller/
 		sudo python client_AppSteeringWheel.py
 	
