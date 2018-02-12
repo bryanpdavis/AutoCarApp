@@ -15,19 +15,21 @@ class Messenger:
 			tcpCliSock.connect(address)
 			print('Connected...')
 			self.clientSocket = tcpCliSock
-			self.send("test;")
         
 	def send(self, message):
-		print("Sending message", message)
-		if not self.debug:
-			self.clientSocket.send(str.encode(message + ";"))
+		#print("Sending message", message)
+		try:
+			if not self.debug:
+				self.clientSocket.send(str.encode(message + ";"))
+		except Exception as e:
+			print("Error occurred", e)
 
-		print("Message sent: " + str(message))
+		#print("Message sent: " + str(message))
 
 	def receive(self, id):
 		if not self.debug:
 			recdata = self.clientSocket.recv(BUFSIZ)
-			print('received data', str(recdata), " for id: ", id)
+			#print('received data', str(recdata), " for id: ", id)
 			return recdata.decode()
 		else:
 			return "Debug"

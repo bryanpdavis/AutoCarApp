@@ -12,6 +12,7 @@ import os
 import smbus
 import sys
 import line_follower_score as line_follower
+from multiprocessing import Process
 from threading import *
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from time import ctime, sleep# Import necessary modules
@@ -88,7 +89,7 @@ def CarController(socket):
 				# Receive data sent from the client. 
 				# Analyze the command received and control the car accordingly.
 				msgs = recdata.split(';')
-				print("Received", len(msgs), "new messages")
+				#print("Received", len(msgs), "new messages")
 				for data in msgs:
 					if not data:
 						break
@@ -120,13 +121,13 @@ def CarController(socket):
 						temp = cpu_temp.read()
 						tcpCliSock.send('[%s] %0.2f' % (ctime(), temp))
 					elif data[0:5] == 'speed':
-						print data
+						#print data
 						numLen = len(data) - len('speed')
 						if numLen == 1 or numLen == 2 or numLen == 3:
 							tmp = data[-numLen:]
-							print 'tmp(str) = %s' % tmp
+							#print 'tmp(str) = %s' % tmp
 							spd = int(tmp)
-							print 'spd(int) = %d' % spd
+							#print 'spd(int) = %d' % spd
 							if spd < 24:
 								spd = 24
 							motor.setSpeed(spd)
@@ -192,20 +193,21 @@ def LineSensor(socket):
 					if score == 1000 and lastCommand != '1000':
 						try:
 							print('Lap\n')
-							clientSocket.send(str(score))
+							clientSocket.send(str(score)+";")
 							lastCommand = '1000'
-							print('Current Time', datetime.now())
-							print('Next Time: ', (datetime.now() + timedelta(seconds=1)))
-							next_time = (datetime.now() + timedelta(seconds=1))
+							#print('Current Time', datetime.now())
+							#print('Next Time: ', (datetime.now() + timedelta(milliseconds=250)))
+							next_time = (datetime.now() + timedelta(milliseconds=250))
 						except Exception as e:
 							print(e)
 							raise
 					elif next_time < datetime.now() and score != -1:
 						try:
-							print("Time to send new data", score)
-							lastCommand = score
-							clientSocket.send(str(score))
-							next_time = (datetime.now() + timedelta(seconds=1))
+							#print("Time to send new data", score)
+							if score <= 7:
+								lastCommand = score
+								clientSocket.send(str(score)+";")
+								next_time = (datetime.now() + timedelta(milliseconds=250))
 						except Exception as e:
 							print(e)
 				except Exception as e:
@@ -224,9 +226,9 @@ lineSensorSock.bind(ADDR2)    # Bind the IP address and port number of the serve
 lineSensorSock.listen(5)     # The parameter of listen() defines the number of connections permitted at one time. Once the 
                          # connections are full, others will be rejected. 
 
-t = threading.Thread(target=CarController, args=(tcpSerSock,))
+t = Process(target=CarController, args=(tcpSerSock,))
 t.daemon = True
-t2 = threading.Thread(target=LineSensor, args=(lineSensorSock,))
+t2 = Process(target=LineSensor, args=(lineSensorSock,))
 t2.daemon = True
 
 def main():
@@ -241,6 +243,8 @@ if __name__ == '__main__':
 	except (KeyboardInterrupt, SystemExit):
 		pass
 	finally:
+		t.join()
+		t2.join()
 		print('closing tcpSocket')
 		tcpSerSock.close()
 		print('closing lineSocket')
