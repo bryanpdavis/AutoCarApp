@@ -7,13 +7,25 @@ Introduction:
 	pip install beautifultable
 	pip install requests
 
-	Also need to install the xbox360 controller driver.
+	Also need to install the xbox360 controller driver if using the xbox 360 remote. Testing was done on the Logitech F310.
+	https://www.microsoft.com/accessories/en-gb/d/xbox-360-controller-for-windows
 
-	Open Terminal Window to Connect to Car.
-		ssh pi@ip
-		pi@Car:~ $ git clone https://github.com/bryanpdavis/AutoCarApp.git
-		cd /AutoCarApp/car/
-		sudo python tcp_server.py
+	Open Terminal Window to Connect to Car or use putty.
+		login as: pi
+		pi@192.168.1.240's password:
+
+		The programs included with the Debian GNU/Linux system are free software;
+		the exact distribution terms for each program are described in the
+		individual files in /usr/share/doc/*/copyright.
+
+		Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+		permitted by applicable law.
+		Last login: Mon Feb 12 15:42:16 2018 from txcdtl03bd3517.attlocal.net
+		pi@AutoCar:~ $ git clone https://github.com/bryanpdavis/AutoCarApp.git
+		pi@AutoCar:~ $ cd AutoCarApp/car/
+		pi@AutoCar:~/AutoCarApp/car $ sudo python tcp_server.py
+		Waiting for connection to car controller service...
+		Waiting for connection to line sensor service...
 
 	Open another window:
 		Computer:~ name$ git clone https://github.com/bryanpdavis/AutoCarApp.git

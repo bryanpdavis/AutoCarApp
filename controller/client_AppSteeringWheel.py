@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from beautifultable import BeautifulTable
 from socket import *
 from threading import *
+from multiprocessing import *
 from time import sleep
 from Message import Messenger
 
@@ -47,7 +48,7 @@ class TextPrint:
         self.reset()
         self.font = BASE_FONT
 
-    def printText(self, screen, textString):
+    def print(self, screen, textString):
         textBitmap = self.font.render(textString, True, WHITE)
         screen.blit(textBitmap, [self.x, self.y])
         self.y += self.line_height
@@ -101,189 +102,17 @@ def print_scores():
 # Controller Loop
 # =============================================================================
 
-def Controller(car, messenger):
+#def Controller(car, messenger):
     # Initialize the joysticks
-    
-    done = False
-    FORWARD = 1
-    BACKWARD = -1
-    
-    stopped = True
-    direction = FORWARD
-    DELAY = 0.0;
-
-    networklatency = 0
-    network_can_go_up = True
-    network_can_go_down = True
-    current_steering = 0
-    done = False
-
-    while done==False:
-        # Event processing
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-
-        # Drawing code
-        screen.fill(BLACK)
-        textPrint.reset()
-
-        # Get count of joysticks
-        joystick_count = pygame.joystick.get_count()
-
-        textPrint.printText(screen, "Number of joysticks: {}".format(joystick_count) )
-        textPrint.indent()
-
-        # For each joystick:
-        for i in range(joystick_count):
-            joystick = pygame.joystick.Joystick(i)
-            joystick.init()
-
-            textPrint.printText(screen, "Joystick {}".format(i) )
-            textPrint.indent()
-
-            # Get the name from the OS for the controller/joystick
-            name = joystick.get_name()
-            textPrint.printText(screen, "Joystick name: {}".format(name) )
-
-            # Usually axis run in pairs, up/down for one, and left/right for the other.
-            axes = joystick.get_numaxes()
-            textPrint.printText(screen, "Number of axes: {}".format(axes) )
-            textPrint.indent()
-
-            for i in range( axes ):
-                axis = joystick.get_axis( i )
-                textPrint.printText(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
-            textPrint.unindent()
-
-            buttons = joystick.get_numbuttons()
-            textPrint.printText(screen, "Number of buttons: {}".format(buttons) )
-            textPrint.indent()
-
-            for i in range( buttons ):
-                button = joystick.get_button( i )
-                textPrint.printText(screen, "Button {:>2} value: {}".format(i,button) )
-            textPrint.unindent()
-
-            # Hat switch. All or nothing for direction, not like joysticks.
-            # Value comes back in a tuple.
-            hats = joystick.get_numhats()
-            textPrint.printText(screen, "Number of hats: {}".format(hats) )
-            textPrint.indent()
-
-            for i in range( hats ):
-                hat = joystick.get_hat( i )
-                textPrint.printText(screen, "Hat {} value: {}".format(i, str(hat)) )
-            textPrint.unindent()
-
-            textPrint.unindent()
 
         # Go ahead and update the screen with what we've drawn.
-
-        if car.Status == CarState.READY or car.Status == CarState.RUNNING:
-            
-            speed = my_controller.joystick.get_axis(1)
-            
-            if networklatency != car.NetDelay:
-                networklatency = car.NetDelay
-                cmd = 'network=' + str(CarState.NETWORK_RATES[car.Laps])
-                print("Sending command:" + cmd)
-                messenger.send(cmd)
-
-            if speed < -.01:
-                start_time = datetime.now()
-
-                car.Status = CarState.RUNNING
-                spd = (speed * -100.0)
-                cmd = ''
-                if direction == FORWARD:
-                    cmd = 'forward=' + str(int(spd))
-                    #print("Forward", "Speed set to", cmd)
-                elif direction == BACKWARD:
-                    cmd = 'backward=' + str(int(spd))
-                    #print("Backward", "Speed set to", cmd)
-                messenger.send(cmd)
-                stopped = False
-            elif speed > -.01 and stopped == False:
-                stopped = True
-                messenger.send('stop')
-
-            steering = my_controller.joystick.get_axis(0)
-
-            if current_steering != steering:
-                current_steering = steering
-                if steering > 0.1:
-                    cmd = 'offset=+' + str(int(steering * 70.0))
-                    messenger.send(cmd)
-                elif steering < 0.1:
-                    cmd = 'offset=' + str(int(steering * 70.0))
-                    messenger.send(cmd)
-                else:
-                    messenger.send('home')
-
-            networkup = my_controller.joystick.get_button(11)
-            networkdown = my_controller.joystick.get_button(10)
-            
-            if networkup == 0:
-                network_can_go_up = True
-            
-            if networkdown == 0:
-                network_can_go_down = True
-
-            if networkup == 1 and network_can_go_up:
-                network_can_go_up = False
-                networklatency = networklatency + 10
-                cmd = 'network=' + str(networklatency)
-                #print("Network latency set to ", networklatency)
-                messenger.send(cmd)
-            elif networkdown == 1 and network_can_go_down:
-                network_can_go_down = False
-                if networklatency > 0:
-                    networklatency = networklatency - 10
-                    #print("Network latency set to ", networklatency)
-
-                cmd = 'network=' + str(networklatency)
-                messenger.send(cmd)
-
-            forwardpaddle = my_controller.joystick.get_button(4)
-            backwardpaddle = my_controller.joystick.get_button(5)
-
-            if forwardpaddle == 1:
-                direction = FORWARD
-            elif backwardpaddle == 1:
-                direction = BACKWARD
-        elif car.Status == CarState.FINISHED:
-            print("Car FINISHED, Stopping car")
-            messenger.send('stop')
-            print("Setting car.Status=CarState.SHOWING_SCORE")
-            car.Status = CarState.SHOWING_SCORE
-            print("Car Status:", car.Status)
-        elif car.Status == CarState.SHOWING_SCORE:
-            disclaimertext = "This is my disclaimer..."
-            screen.fill(WHITE)
-            disclaimertext = BASE_FONT.render("Some disclaimer...", 1, (0,0,0))
-            screen.blit(disclaimertext, (5, 480))
-
-            scoretext = BASE_FONT.render("Score {0}".format(car.Accuracy), 1, (0,0,0))
-            screen.blit(scoretext, (5, 10))
-
-            pygame.display.flip()
-            clock.tick(REFRESH_RATE)
-        elif car.Status == CarState.KILLING_CONTROLLER:
-            print("Killing controller")
-            break
-
-        pygame.display.flip()
-        clock.tick(REFRESH_RATE)
-    car.Status = CarState.RESTART
-    print("Exiting controller")
-        
 
 CAR_LAP = '1000'
 
 def AccuracyMonitor(car, messenger):
-    print("Starting Accuracy Monitor")
+    print("Starting Accuracy Monitor", "CarStatus", car.Status)
     while car.Status == CarState.WAITING:
+        print("Car is currently waiting for the ready indicator")
         data = messenger.receive("READYIndicator")
         msgs = data.split(";")
         for score in msgs:
@@ -310,6 +139,9 @@ def AccuracyMonitor(car, messenger):
         data = messenger.receive("SensorScore")
         msgs = data.split(";")
         for score in msgs:
+            if not score:
+                break
+                
             print("Sensor Score: " + str(score))
             
             #If we sense a Lap, we make sure that LapFound has been reset to false to ensure we aren't double counting laps
@@ -337,8 +169,12 @@ def AccuracyMonitor(car, messenger):
 
     while True:
         print("Entering Showing Score test loop")
+        joystick = pygame.joystick.Joystick(0)
         while car.Status == CarState.SHOWING_SCORE:
-            home = my_controller.joystick.get_button(0)
+            if "G29" in joystick.get_name():
+                home = joystick.get_button(0)
+            elif "F310" in my_controller.joystick.get_name():
+                home = joystick.get_button(2)
             if home == 1:
                 print("x button pressed, starting the round/threads.")
                 car.Status = CarState.KILLING_CONTROLLER
@@ -350,16 +186,24 @@ try:
 except:
     pass
 
-# Start the Car Status as UNKNOWN to make the main() function start the threads
-car = Car()
-car.Status = CarState.UNKNOWN
-lineSensorMsgr = Messenger(ADDR2)
-carControllerMsgr = Messenger(ADDR)
-
-t: threading.Thread
-t2: threading.Thread
-
 def main():
+    car = Car()
+    car.Status = CarState.UNKNOWN
+    lineSensorMsgr = Messenger(ADDR2)
+    carControllerMsgr = Messenger(ADDR)
+
+    FORWARD = 1
+    BACKWARD = -1
+
+    stopped = True
+    direction = FORWARD
+    DELAY = 0.0;
+
+    done = False
+    networklatency = 0
+    network_can_go_up = True
+    network_can_go_down = True
+    current_steering = 0
     try:
         while True:
             if car.Status == CarState.RESTART:
@@ -369,22 +213,192 @@ def main():
                 print("Starting Game Threads")
                 t = threading.Thread(target=AccuracyMonitor, args=(car, lineSensorMsgr))
                 #t.daemon = True
-                t2 = threading.Thread(target=Controller, args=(car, carControllerMsgr))
+                #t2 = threading.Thread(target=Controller, args=(car, carControllerMsgr))
                 #t2.daemon = True
                 t.start()
-                t2.start()
+                #t2.start()
 
             if car.Status == CarState.UNKNOWN:
                 car.Status = CarState.WAITING
                 print("Starting Game Threads")
                 t = threading.Thread(target=AccuracyMonitor, args=(car, lineSensorMsgr))
                 #t.daemon = True
-                t2 = threading.Thread(target=Controller, args=(car, carControllerMsgr))
+                #t2 = threading.Thread(target=Controller, args=(car, carControllerMsgr))
                 #t2.daemon = True
                 t.start()
-                t2.start()
+                #t2.start()
 
-            sleep(.001)
+            while done==False:
+                pygame.event.pump()
+                # Event processing
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        t.join()
+                        print('closing lineSensorMsgr')
+                        lineSensorMsgr.close()
+                        print('Sockets Closed')
+                        sys.exit(0)
+                        os._exit(0)
+
+                # Drawing code
+                screen.fill(BLACK)
+                textPrint.reset()
+
+                # Get count of joysticks
+                joystick_count = pygame.joystick.get_count()
+
+                textPrint.print(screen, "Number of joysticks: {}".format(joystick_count) )
+                textPrint.indent()
+
+                # For each joystick:
+                for i in range(joystick_count):
+                    joystick = pygame.joystick.Joystick(i)
+                    joystick.init()
+
+                    textPrint.print(screen, "Joystick {}".format(i) )
+                    textPrint.indent()
+
+                    # Get the name from the OS for the controller/joystick
+                    name = joystick.get_name()
+                    textPrint.print(screen, "Joystick name: {}".format(name) )
+
+                    # Usually axis run in pairs, up/down for one, and left/right for the other.
+                    axes = joystick.get_numaxes()
+                    textPrint.print(screen, "Number of axes: {}".format(axes) )
+                    textPrint.indent()
+
+                    for i in range( axes ):
+                        axis = joystick.get_axis( i )
+                        textPrint.print(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
+                    textPrint.unindent()
+
+                    buttons = joystick.get_numbuttons()
+                    textPrint.print(screen, "Number of buttons: {}".format(buttons) )
+                    textPrint.indent()
+
+                    for i in range( buttons ):
+                        button = joystick.get_button( i )
+                        textPrint.print(screen, "Button {:>2} value: {}".format(i,button) )
+                    textPrint.unindent()
+
+                    # Hat switch. All or nothing for direction, not like joysticks.
+                    # Value comes back in a tuple.
+                    hats = joystick.get_numhats()
+                    textPrint.print(screen, "Number of hats: {}".format(hats) )
+                    textPrint.indent()
+
+                    for i in range( hats ):
+                        hat = joystick.get_hat( i )
+                        textPrint.print(screen, "Hat {} value: {}".format(i, str(hat)) )
+                    textPrint.unindent()
+
+                    textPrint.unindent()
+
+                if car.Status == CarState.READY or car.Status == CarState.RUNNING:
+                    
+                    name = joystick.get_name()
+                    if "G29" in name:
+                        speed = my_controller.joystick.get_axis(2)
+                        steering = my_controller.joystick.get_axis(0)
+                        networkup = my_controller.joystick.get_button(19)
+                        networkdown = my_controller.joystick.get_button(20)
+                        forwardpaddle = my_controller.joystick.get_button(4)
+                        backwardpaddle = my_controller.joystick.get_button(5)
+                    elif "F310" in name:
+                        speed = my_controller.joystick.get_axis(2)
+                        steering = my_controller.joystick.get_axis(0)
+                        networkup = my_controller.joystick.get_button(6)
+                        networkdown = my_controller.joystick.get_button(7)
+                        forwardpaddle = my_controller.joystick.get_button(4)
+                        backwardpaddle = my_controller.joystick.get_button(5)
+                    
+
+                    if networklatency != car.NetDelay:
+                        networklatency = car.NetDelay
+                        cmd = 'network=' + str(CarState.NETWORK_RATES[car.Laps])
+                        print("Sending command:" + cmd)
+                        carControllerMsgr.send(cmd)
+
+                    if speed < -.01:
+                        start_time = datetime.now()
+
+                        car.Status = CarState.RUNNING
+                        spd = (speed * -100.0)
+                        cmd = ''
+                        if direction == FORWARD:
+                            cmd = 'forward=' + str(int(spd))
+                            #print("Forward", "Speed set to", cmd)
+                        elif direction == BACKWARD:
+                            cmd = 'backward=' + str(int(spd))
+                            #print("Backward", "Speed set to", cmd)
+                        carControllerMsgr.send(cmd)
+                        stopped = False
+                    elif speed > -.01 and stopped == False:
+                        stopped = True
+                        carControllerMsgr.send('stop')
+
+                    if current_steering != steering:
+                        current_steering = steering
+                        if steering > 0.1:
+                            cmd = 'offset=+' + str(int(steering * 70.0))
+                            carControllerMsgr.send(cmd)
+                        elif steering < 0.1:
+                            cmd = 'offset=' + str(int(steering * 70.0))
+                            carControllerMsgr.send(cmd)
+                        else:
+                            carControllerMsgr.send('home')
+                    
+                    if networkup == 0:
+                        network_can_go_up = True
+                    
+                    if networkdown == 0:
+                        network_can_go_down = True
+
+                    if networkup == 1 and network_can_go_up:
+                        network_can_go_up = False
+                        networklatency = networklatency + 10
+                        cmd = 'network=' + str(networklatency)
+                        #print("Network latency set to ", networklatency)
+                        carControllerMsgr.send(cmd)
+                    elif networkdown == 1 and network_can_go_down:
+                        network_can_go_down = False
+                        if networklatency > 0:
+                            networklatency = networklatency - 10
+                            #print("Network latency set to ", networklatency)
+
+                        cmd = 'network=' + str(networklatency)
+                        carControllerMsgr.send(cmd)
+
+                    if forwardpaddle == 1:
+                        direction = FORWARD
+                    elif backwardpaddle == 1:
+                        direction = BACKWARD
+                elif car.Status == CarState.FINISHED:
+                    print("Car FINISHED, Stopping car")
+                    carControllerMsgr.send('stop')
+                    print("Setting car.Status=CarState.SHOWING_SCORE")
+                    car.Status = CarState.SHOWING_SCORE
+                    print("Car Status:", car.Status)
+                elif car.Status == CarState.SHOWING_SCORE:
+                    disclaimertext = "This is my disclaimer..."
+                    screen.fill(WHITE)
+                    disclaimertext = BASE_FONT.render("Some disclaimer...", 1, (0,0,0))
+                    screen.blit(disclaimertext, (5, 480))
+
+                    scoretext = BASE_FONT.render("Score {0}".format(car.Accuracy), 1, (0,0,0))
+                    screen.blit(scoretext, (5, 10))
+
+                elif car.Status == CarState.KILLING_CONTROLLER:
+                    print("Killing controller")
+                    break
+                
+                # Go ahead and update the screen with what we've drawn.
+                pygame.display.flip()
+                clock.tick(REFRESH_RATE)
+
+            car.Status = CarState.RESTART
+            print("Exiting controller")
+
     except (KeyboardInterrupt, SystemExit):
         t.join()
         t2.join()

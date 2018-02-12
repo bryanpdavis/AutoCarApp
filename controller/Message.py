@@ -28,6 +28,7 @@ class Messenger:
 
 	def receive(self, id):
 		if not self.debug:
+			#print("waiting for a response")
 			recdata = self.clientSocket.recv(BUFSIZ)
 			#print('received data', str(recdata), " for id: ", id)
 			return recdata.decode()
