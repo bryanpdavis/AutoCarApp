@@ -17,6 +17,7 @@ centervalue = 7
 def __distance(x,y):
     return abs(x-y)
 
+
 def get_score():
 	try:
 		r_data = bus.read_byte_data(base_addr, register_a)

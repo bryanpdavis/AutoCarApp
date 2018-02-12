@@ -189,7 +189,7 @@ def LineSensor(socket):
 					else:
 						#print("Score not found, continuing next iteration")
 						continue
-					
+						
 					if score == 1000 and lastCommand != '1000':
 						try:
 							print('Lap\n')
