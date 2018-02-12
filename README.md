@@ -13,7 +13,7 @@ Introduction:
 		pip install pygame
 		pip install beautifultable
 		pip install requests
-
+		
 		Computer:~ name$ git clone https://github.com/bryanpdavis/AutoCarApp.git
 		cd /AutoCar/controller/
 		sudo python3 client_AppSteeringWheel.py
