@@ -6,14 +6,15 @@ Introduction:
 	https://www.microsoft.com/accessories/en-gb/d/xbox-360-controller-for-windows
 
 	Open Terminal Window to Connect to Car or use Putty on Windows:
-		![Alt text](http://iptvwams-cdn.att.net/AutoCarApp/CarInstall.jpg?raw=true "Title")
+
+![Alt text](http://iptvwams-cdn.att.net/AutoCarApp/CarInstall.jpg?raw=true "Title")
 
 	In GitBash (https://gitforwindows.org/) for Python3 (tested on 3.6.3):
 		Start a new gitbash terminal and install the following dependencies:
 		pip install pygame
 		pip install beautifultable
 		pip install requests
-		
+
 		Computer:~ name$ git clone https://github.com/bryanpdavis/AutoCarApp.git
 		cd /AutoCar/controller/
 		sudo python3 client_AppSteeringWheel.py
