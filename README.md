@@ -3,6 +3,7 @@ Introduction:
 	This is based on the Sunfounder Raspberry Pi smart video car client but updating to support the xbox360controller and hopefully a steering wheel via pygame for cross-platform support. Currently supports a Logitec G29 Steering Wheel
 	
 	Dependencies for the Controller:
+	pip install pygame
 	pip install beautifultable
 	pip install requests
 
