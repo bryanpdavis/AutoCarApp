@@ -1,36 +1,22 @@
 # AutoCarApp
 Introduction:
 	This is based on the Sunfounder Raspberry Pi smart video car client but updating to support the xbox360controller and hopefully a steering wheel via pygame for cross-platform support. Currently supports a Logitec G29 Steering Wheel
-	
-	Dependencies for the Controller:
-	pip install pygame
-	pip install beautifultable
-	pip install requests
 
 	Also need to install the xbox360 controller driver if using the xbox 360 remote. Testing was done on the Logitech F310.
 	https://www.microsoft.com/accessories/en-gb/d/xbox-360-controller-for-windows
 
-	Open Terminal Window to Connect to Car or use putty.
-		login as: pi
-		pi@192.168.1.240's password:
+	Open Terminal Window to Connect to Car or use Putty on Windows:
+		![Alt text](http://iptvwams-cdn.att.net/AutoCarApp/CarInstall.jpg?raw=true "Title")
 
-		The programs included with the Debian GNU/Linux system are free software;
-		the exact distribution terms for each program are described in the
-		individual files in /usr/share/doc/*/copyright.
+	In GitBash (https://gitforwindows.org/) for Python3 (tested on 3.6.3):
+		Start a new gitbash terminal and install the following dependencies:
+		pip install pygame
+		pip install beautifultable
+		pip install requests
 
-		Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-		permitted by applicable law.
-		Last login: Mon Feb 12 15:42:16 2018 from txcdtl03bd3517.attlocal.net
-		pi@AutoCar:~ $ git clone https://github.com/bryanpdavis/AutoCarApp.git
-		pi@AutoCar:~ $ cd AutoCarApp/car/
-		pi@AutoCar:~/AutoCarApp/car $ sudo python tcp_server.py
-		Waiting for connection to car controller service...
-		Waiting for connection to line sensor service...
-
-	Open another window:
 		Computer:~ name$ git clone https://github.com/bryanpdavis/AutoCarApp.git
 		cd /AutoCar/controller/
-		sudo python client_AppSteeringWheel.py
+		sudo python3 client_AppSteeringWheel.py
 	
 	1.) Put the car on the line which activates the gas pedal and steering wheel. 
 	2.) Car runs through 4 rounds at [50,100,200,50] ms connection delay.
