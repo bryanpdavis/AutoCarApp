@@ -94,8 +94,8 @@ lap_accuracy = []
 temp_user_scores = []
 final_user_scores = []
 total_time_lapsed = ''
-
 current_delay = 50
+
 def record_score(score):
     if score != '1000':
         temp_user_scores.append(int(score))
@@ -135,6 +135,7 @@ def get_lapsed_time():
 
 def changeCarNetDelay(Delay):
     current_delay = Delay
+    Car.NetDelay = Delay
 
 CAR_LAP = '1000'
 
@@ -176,7 +177,7 @@ def AccuracyMonitor(car, messenger):
                 round_start_time = datetime.now()
             #Car Status is RUNNING, begin gathering scores from the line sensor and look for Laps
             time_lapsed = datetime.now() - start_time
-            print_rounds(time_lapsed)
+            print_rounds(time_lapsed, car.NetDelay)
 
             data = messenger.receive("SensorScore")
             msgs = data.split(";")
@@ -202,7 +203,6 @@ def AccuracyMonitor(car, messenger):
                         break
                     else:
                         round_start_time = datetime.now()
-                        print("Car Laps:", car.Laps, " Length of Network Rates:", len(CarState.NETWORK_RATES))
                         changeCarNetDelay(CarState.NETWORK_RATES[car.Laps])
 
                 elif int(score) != int(CAR_LAP) and int(score) <= 7:
@@ -218,16 +218,17 @@ def AccuracyMonitor(car, messenger):
         round_start_time = ''
         round_times = []
         final_user_score_showing = False
-
+        final_rankings_showing = False
         while True:
             print("Entering Showing Score test loop")
             joystick = pygame.joystick.Joystick(0)
             next_screen_time = datetime.now() + timedelta(seconds=5)
             while car.Status == CarState.SHOWING_SCORE:
                 if datetime.now() < next_screen_time and final_user_score_showing == False:
-                    print_rounds(time_lapsed)
+                    print_rounds(time_lapsed, None)
                     final_user_score_showing = True
-                elif datetime.now() > next_screen_time and final_user_score_showing == True:
+                elif datetime.now() > next_screen_time and final_user_score_showing == True and final_rankings_showing == False:
+                    final_rankings_showing = True
                     show_user_ranking()
 
                 if "G29" in joystick.get_name():
@@ -305,7 +306,7 @@ def show_user_ranking():
     pygame.display.flip()
     clock.tick(REFRESH_RATE)
     
-def print_rounds(time_lapsed):
+def print_rounds(time_lapsed, delay):
     screen.fill(WHITE)
     
     total_time_title = BASE_FONT.render("Time Lapsed", 1, (0,0,0))
@@ -337,36 +338,36 @@ def print_rounds(time_lapsed):
     except:
         pass
     
-    
-    #Top right data
-    latency_title = BASE_FONT.render("Latency", 1, (0,0,0))
-    latency_title_rect = total_time_title.get_rect()
-    latency_title_rect.top = 10
-    latency_title_rect.right = SCREEN_WIDTH+10
-    screen.blit(latency_title, latency_title_rect)
+    if delay != None:
+        #Top right data
+        latency_title = BASE_FONT.render("Latency", 1, (0,0,0))
+        latency_title_rect = total_time_title.get_rect()
+        latency_title_rect.top = 10
+        latency_title_rect.right = SCREEN_WIDTH+10
+        screen.blit(latency_title, latency_title_rect)
 
-    latency_text = TEXT_FONT.render("{0}ms".format(current_delay), 1, (0,0,0))
-    latency_text_rect = time_lapsed_text.get_rect()
-    latency_text_rect.top = 65
-    latency_text_rect.left = SCREEN_WIDTH-200
-    screen.blit(latency_text, latency_text_rect)
+        latency_text = TEXT_FONT.render("{0}ms".format(delay), 1, (0,0,0))
+        latency_text_rect = time_lapsed_text.get_rect()
+        latency_text_rect.top = 65
+        latency_text_rect.left = SCREEN_WIDTH-200
+        screen.blit(latency_text, latency_text_rect)
 
-    accuracy_title = BASE_FONT.render("Accuracy", 1, (0,0,0))
-    accuracy_title_rect = accuracy_title.get_rect()
-    accuracy_title_rect.top = 100
-    accuracy_title_rect.right = latency_title_rect.right-70
-    screen.blit(accuracy_title, accuracy_title_rect)
+        accuracy_title = BASE_FONT.render("Accuracy", 1, (0,0,0))
+        accuracy_title_rect = accuracy_title.get_rect()
+        accuracy_title_rect.top = 100
+        accuracy_title_rect.right = latency_title_rect.right-70
+        screen.blit(accuracy_title, accuracy_title_rect)
 
-    try:
-        current_accuracy = Car.Accuracy
-        percentage_accuracy = round(((int(current_accuracy) * 14.2857) * -1) + 100, 2)
-        accuracy_text = TEXT_FONT.render("{0}%".format(percentage_accuracy), 1, (0,0,0))
-        accuracy_text_rect = accuracy_text.get_rect()
-        accuracy_text_rect.top = 155
-        accuracy_text_rect.left = SCREEN_WIDTH-200
-        screen.blit(accuracy_text, accuracy_text_rect)
-    except:
-        print("Can't do math with", Car.Accuracy)
+        try:
+            current_accuracy = Car.Accuracy
+            percentage_accuracy = round(((int(current_accuracy) * 14.2857) * -1) + 100, 2)
+            accuracy_text = TEXT_FONT.render("{0}%".format(percentage_accuracy), 1, (0,0,0))
+            accuracy_text_rect = accuracy_text.get_rect()
+            accuracy_text_rect.top = 155
+            accuracy_text_rect.left = SCREEN_WIDTH-200
+            screen.blit(accuracy_text, accuracy_text_rect)
+        except:
+            pass
 
     laps_title = BASE_FONT.render("Laps", 1, (0,0,0))
     laps_title_rect = laps_title.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
@@ -431,13 +432,16 @@ def main():
     network_can_go_up = True
     network_can_go_down = True
     current_steering = 0
+
+    first_run = True
     try:
         while True:
             if car.Status == CarState.RESTART:
                 #Reset some of the round values
                 laps = []
-                total_time_lapsed
+                laps.clear()
                 car.Reset()
+                first_run = True
                 print("Game Finished")
                 car.Status = CarState.WAITING
                 print("Starting Game Threads")
@@ -528,6 +532,12 @@ def main():
                 elif car.Status == CarState.READY or car.Status == CarState.RUNNING:
                     if car.Status == CarState.READY and DEBUG_APP == False:
                         show_title_screen(car)
+                        if first_run:
+                            first_run = False
+                            file = os.path.join("music", "1.mp3")
+                            pygame.mixer.init()
+                            pygame.mixer.music.load(file)
+                            pygame.mixer.music.play()
 
                     name = my_controller.joystick.get_name()
                     speed = my_controller.joystick.get_axis(2)

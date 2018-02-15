@@ -19,7 +19,13 @@ class NETWORK_DIRECTION:
     DOWN = -1
 
 class Car(object):
-    
+    def __init__(self):
+        self.Status = CarState.UNKNOWN
+        self._NetDelay = 50
+        self.Laps = 0
+        self.Score = 0
+        self._Accuracy = 0.0
+
     @property
     def Accuracy(self):
         return self._Accuracy
@@ -43,14 +49,14 @@ class Car(object):
 
     @NetDelay.setter
     def NetDelay(self, value):
+        print("Setting net delay on Car")
         self._NetDelay = value
 
-    def __init__(self):
-        self.Status = CarState.UNKNOWN
-        self._NetDelay = 50
-        self.Laps = 0
-        self.Score = 0
-        self._Accuracy = 0.0
+    @NetDelay.deleter
+    def NetDelay(self):
+        print("Deleting NetDelay")
+        self._NetDelay = None
+    
 
     def Reset(self):
         self.Status = CarState.WAITING
