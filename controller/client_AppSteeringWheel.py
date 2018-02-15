@@ -103,15 +103,22 @@ def record_score(score):
         Car.Accuracy = score
 
 def calculate_total_score(total_time):
-    average_score = str(round(sum(temp_user_scores) / float(len(temp_user_scores)), 2))
-    print("Average Score: " + average_score)
-    final_user_scores.append([len(final_user_scores), average_score, total_time.total_seconds()])
-    temp_user_scores.clear()
-    print_scores()
+    try:
+        average_score = round(sum(temp_user_scores) / float(len(temp_user_scores)), 2)
+
+        average_accuracy_percent = round(((float(average_score) * 14.2857) * -1) + 100, 2)
+        total_score = 100000 - int(float(total_time.total_seconds()) / (average_accuracy_percent/100) * 100)
+
+        #print("Average Score: " + average_score)
+        final_user_scores.append([len(final_user_scores), str(average_accuracy_percent), total_time.total_seconds(), total_score])
+        temp_user_scores.clear()
+        print_scores()
+    except Exception as e:
+        print("Error occurred in calculate_total_score", e)
 
 def print_scores():
     table = BeautifulTable()
-    table.column_headers = ["index", "score", "time_lapsed"]
+    table.column_headers = ["index", "score", "time_lapsed", "total_score"]
     for item in final_user_scores:
         table.append_row(item)
     
@@ -266,18 +273,17 @@ def show_user_ranking():
         time_lapsed_title_text_rect = time_lapsed_title_text.get_rect(center=(SCREEN_WIDTH/2, 160))
         time_lapsed_title_text_rect.left = 1200
         screen.blit(time_lapsed_title_text, time_lapsed_title_text_rect)
+        rankings = sorted(final_user_scores, key=lambda tup: tup[3], reverse=True)
 
-        for item in final_user_scores:
+        for item in rankings:
             distance = 40*i
 
             rank_text = TEXT_FONT.render("" + str(i+1) + "", 1, (0,0,0))
             rank_text_rect = rank_text.get_rect(center=(SCREEN_WIDTH/2, 200+distance))
             rank_text_rect.left = 400
             screen.blit(rank_text, rank_text_rect)
-
-            average_accuracy_percent = round(((float(item[1]) * 14.2857) * -1) + 100, 2)
         
-            accuracy_text = TEXT_FONT.render("{0}%".format(average_accuracy_percent), 1, (0,0,0))
+            accuracy_text = TEXT_FONT.render("{0}%".format(item[1]), 1, (0,0,0))
             accuracy_text_rect = accuracy_text.get_rect(center=(SCREEN_WIDTH/2, 200+distance))
             accuracy_text_rect.left = 580
             screen.blit(accuracy_text, accuracy_text_rect)
@@ -287,8 +293,7 @@ def show_user_ranking():
             time_text_rect.left = 900
             screen.blit(time_text, time_text_rect)
 
-            total_score = 100000 - int(float(item[2]) / (average_accuracy_percent/100) * 100)
-            time_lapsed_text = TEXT_FONT.render("{0}".format(total_score), 1, (0,0,0))
+            time_lapsed_text = TEXT_FONT.render("{0}".format(item[3]), 1, (0,0,0))
             time_lapsed_text_rect = time_lapsed_text.get_rect(center=(SCREEN_WIDTH/2, 200+distance))
             time_lapsed_text_rect.left = 1200
             screen.blit(time_lapsed_text, time_lapsed_text_rect)
@@ -518,8 +523,8 @@ def main():
 
                         textPrint.unindent()
                 if car.Status == CarState.WAITING:
-                    show_user_ranking()
-                    #show_title_screen(car)
+                    #show_user_ranking()
+                    show_title_screen(car)
                 elif car.Status == CarState.READY or car.Status == CarState.RUNNING:
                     if car.Status == CarState.READY and DEBUG_APP == False:
                         show_title_screen(car)
