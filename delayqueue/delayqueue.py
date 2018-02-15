@@ -135,7 +135,7 @@ def controller():
             recdata = tcpCliSock.recv(BUFSIZ)
 
             msgs = recdata.split(b';')
-		
+        
             for data in msgs:
                 if not data:
                     break

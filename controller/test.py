@@ -1,18 +1,4 @@
-#!/usr/bin/python
-import os, sys
-import time
-import threading
-import json, requests
-import xbox360_controller
 import pygame
-import json
-from Car import *
-from datetime import datetime, timedelta
-from beautifultable import BeautifulTable
-from socket import *
-from threading import *
-from time import sleep
-from Message import Messenger
 
 # Colors
 BLACK = (0, 0, 0)

@@ -19,21 +19,21 @@ def __distance(x,y):
 
 
 def get_score():
-	try:
-		r_data = bus.read_byte_data(base_addr, register_a)
-	except Exception as e:
-		print(traceback.format_exc())
+    try:
+        r_data = bus.read_byte_data(base_addr, register_a)
+    except Exception as e:
+        print(traceback.format_exc())
 
-	#print("Raw Sensor Data:", r_data)
-	if r_data == 0:
-		return 1000
-	elif r_data < 255:
-		try:
-			scoreindex = scoringarray.index(r_data)
-			return __distance(centervalue, scoreindex)
-		except:
-			return -1
-	else :
-		return -1
-	
-		
+    #print("Raw Sensor Data:", r_data)
+    if r_data == 0:
+        return 1000
+    elif r_data < 255:
+        try:
+            scoreindex = scoringarray.index(r_data)
+            return __distance(centervalue, scoreindex)
+        except:
+            return -1
+    else :
+        return -1
+    
+        
